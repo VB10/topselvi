@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"firebase.google.com/go/auth"
 
 	firebase "firebase.google.com/go"
 	"github.com/gorilla/mux"
@@ -21,6 +24,11 @@ type Book struct {
 
 var _app *firebase.App
 var ctx context.Context
+
+func exampleHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	io.WriteString(w, `{"status":"ok"}`)
+}
 
 func init() {
 
@@ -40,18 +48,19 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/videos", getVideos).Methods("GET")
+
+	router.Handle("/videos", Middleware(http.HandlerFunc(exampleHandler), auth.AuthMiddleware)).Methods("GET")
 	http.ListenAndServe(":8000", router)
 }
 
 func getVideos(w http.ResponseWriter, r *http.Request) {
 
-	// if len(r.Header.Get("veli")) <= 0 {
-	// 	var error Error
-	// 		_a
-	// 	http.Error(w, 	json.NewEncoder(w).Encode("a").Error, http.StatusNotAcceptable)
-	// 	return
-	// }
+	if r.Header.Get("usertoken") != "" {
+		http.Error(w, json.NewEncoder(w).Encode("a").Error(), http.StatusNotAcceptable)
+		return
+	}
+
+	// cmd.verifyUser(_app)
 
 	// client, err := _app.Auth(ctx)
 	// if err != nil {
