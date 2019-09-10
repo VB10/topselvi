@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
-
 	firebase "firebase.google.com/go"
+	"github.com/gorilla/mux"
 	"google.golang.org/api/option"
 )
 
+// Book mock data
 type Book struct {
 	Title  string `json:"title,omitempty"`
 	Author string `json:"author,omitempty"`
@@ -24,16 +24,14 @@ var ctx context.Context
 
 func init() {
 
-	opt := option.WithCredentialsFile("assets/you2win.json")
+	opt := option.WithCredentialsFile("configs/you2win.json")
 	config := &firebase.Config{ProjectID: "you2win-3b9d9", DatabaseURL: "https://you2win-3b9d9.firebaseio.com/"}
 	app, err := firebase.NewApp(context.Background(), config, opt)
 	if err != nil {
 		log.Fatalf("error initializing app: %v\n", err)
 	}
-
 	_app = app
 	ctx = context.Background()
-
 }
 
 func refreshToken(w http.ResponseWriter, r *http.Request) {
@@ -41,34 +39,38 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	router := mux.NewRouter()
-
 	router.HandleFunc("/videos", getVideos).Methods("GET")
 	http.ListenAndServe(":8000", router)
 }
-func postVideos(w http.ResponseWriter, r *http.Request) {
-	// defaultDatabase, err := _app.Database(context.Background())
-	// if err != nil {
-	// 	log.Fatalf("error getting Auth client: %v\n", err)
 
-	// }
-	// _book := Book{Title: "Veli", Author: "Bacik"}
-	// data, err := defaultDatabase.NewRef("test").Child("testingo").Push(context.Background(), _book)
-	// if err != nil {
-	// 	log.Fatalf("error getting Auth client: %v\n", err)
-	// }
-}
 func getVideos(w http.ResponseWriter, r *http.Request) {
-	if len(r.Header.Get("veli")) <= 0 {
-		http.Error(w, "Header token must be write", http.StatusNotAcceptable)
-		return
-	}
-	db, err := _app.Database(context.Background())
+
+	// if len(r.Header.Get("veli")) <= 0 {
+	// 	var error Error
+	// 		_a
+	// 	http.Error(w, 	json.NewEncoder(w).Encode("a").Error, http.StatusNotAcceptable)
+	// 	return
+	// }
+
+	// client, err := _app.Auth(ctx)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusNotFound)
+	// 	return
+	// }
+
+	// token, err := client.GetUser(ctx, r.Header.Get("veli"))
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusNotFound)
+	// 	return
+	// }
+
+	db, err := _app.Database(ctx)
 	if err != nil {
 		log.Fatalf("error getting Auth client: %v\n", err)
 		return
 	}
+
 	ref := db.NewRef("test/testingo")
 	results, err := ref.OrderByKey().GetOrdered(ctx)
 
