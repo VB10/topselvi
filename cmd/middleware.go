@@ -1,4 +1,4 @@
-package auth
+package cmd
 
 import (
 	"io"
@@ -26,6 +26,19 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			io.WriteString(w, `{"error":"invalid_key"}`)
 			return
 		}
+		// cmd.verifyUser(_app)
+
+		// client, err := _app.Auth(ctx)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusNotFound)
+		// 	return
+		// }
+
+		// token, err := client.GetUser(ctx, r.Header.Get("veli"))
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusNotFound)
+		// 	return
+		// }
 		next.ServeHTTP(w, r)
 	})
 }
