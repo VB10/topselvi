@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"../../cmd"
+	"../youtube"
 )
 
 // Video model.
@@ -25,18 +26,25 @@ func GetVideos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	docsnap, err := db.Collection("videos").Documents(ctx).Next()
+	docsnap, err := db.Collection("videos").Documents(ctx).GetAll()
 	if err != nil {
 	}
 
+	// kvp key
+	youtube.YoutubeConfig("V_zfNjN32f4")
+
 	var v Video
-	if err := docsnap.DataTo(&v); err != nil {
-		println(err)
+	var videos []Video
+	for _, doc := range docsnap {
+		if err := doc.DataTo(&v); err != nil {
+			println(err)
+		}
+		videos = append(videos, v)
 	}
 
 	// fmt.Println(v)
 
-	json.NewEncoder(w).Encode(v)
+	json.NewEncoder(w).Encode(videos)
 
 	// println(result.)
 	// db, err := app.Database(ctx)
