@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"../utility"
 	"io"
 	"net/http"
 )
@@ -19,6 +20,12 @@ func Middleware(h http.Handler, middleware ...func(http.Handler) http.Handler) h
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestKey := r.Header.Get("token")
+		userID := r.Header.Get("userID")
+
+		if error := VerifyUserToken(userID); error != nil {
+			utility.GenerateError(w, error, http.StatusUnauthorized, "token error")
+			return
+		}
 		if len(requestKey) == 0 {
 			// Report Unauthorized
 			w.Header().Add("Content-Type", "application/json")
@@ -26,19 +33,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			io.WriteString(w, `{"error":"invalid_key"}`)
 			return
 		}
-		// cmd.verifyUser(_app)
-
-		// client, err := _app.Auth(ctx)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusNotFound)
-		// 	return
-		// }
-
-		// token, err := client.GetUser(ctx, r.Header.Get("veli"))
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusNotFound)
-		// 	return
-		// }
 		next.ServeHTTP(w, r)
 	})
 }

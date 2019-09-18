@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
-	"github.com/VB10/topselvi/pkg/auth"
 	"github.com/gorilla/mux"
 	"gopkg.in/go-playground/validator.v9"
 	"log"
@@ -13,6 +12,7 @@ import (
 
 	"../../cmd"
 	"../../utility"
+	"../users"
 )
 
 // Video model.
@@ -37,8 +37,8 @@ type VideoPost struct {
 }
 
 func VideosRouterInit(router *mux.Router) {
-	router.Handle("/videos", auth.Middleware(http.HandlerFunc(GetVideos), auth.AuthMiddleware)).Methods(cmd.GET)
-	router.Handle("/videos", auth.Middleware(http.HandlerFunc(PostVideo), auth.AuthMiddleware)).Methods(cmd.POST)
+	router.Handle("/videos", cmd.Middleware(http.HandlerFunc(GetVideos), cmd.AuthMiddleware)).Methods(cmd.GET)
+	router.Handle("/videos", cmd.Middleware(http.HandlerFunc(PostVideo), cmd.AuthMiddleware)).Methods(cmd.POST)
 }
 
 // GetVideos take all videos list.
@@ -110,6 +110,8 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 	success.CreatedDate = time.Now().String()
 	success.Success = true
 	success.Data = firestoreRef.ID
+
+	users.GetUser(w,r);
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(success)

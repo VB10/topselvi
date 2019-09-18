@@ -5,19 +5,16 @@ import (
 	"../../utility"
 	"context"
 	"encoding/json"
-	"github.com/VB10/topselvi/pkg/auth"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"
+	"time"
 )
 
 func UserRouterInit(router *mux.Router) {
-	router.Handle("/users", auth.Middleware(http.HandlerFunc(GetUser), auth.AuthMiddleware)).Methods(cmd.GET)
-	//router.Handle("/videos", auth.Middleware(http.HandlerFunc(PostVideo), auth.AuthMiddleware)).Methods(cmd.POST)
-}
-
-func checkUserToken(val string) {
-
+	router.Handle("/users", cmd.Middleware(http.HandlerFunc(GetUser), cmd.AuthMiddleware)).Methods(cmd.GET)
+	//refresh token doesnt have userid
+	router.HandleFunc("/users/refresh", RefreshUserToken).Methods(cmd.GET)
 }
 
 // GetVideos take all videos list.
@@ -33,28 +30,57 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var ctx = context.Background()
 	app := cmd.FBInstance()
 
-	client, error := app.Auth(ctx)
+	database, error := app.Firestore(ctx)
 	if error != nil {
-		utility.GenerateError(w, error, http.StatusNotFound, "")
+		utility.GenerateError(w, error, http.StatusInternalServerError, "")
 		return
 	}
 
-	xa, error := client.GetUser(ctx, userID)
-	print(xa.DisplayName)
-
-	token, error := client.CustomToken(ctx, xa.UID)
+	token, error := cmd.GetUserData(userID)
 	if error != nil {
-		utility.GenerateError(w, error, http.StatusNotFound, "")
 		return
 	}
 
-	verifyToken, error := client.VerifyIDTokenAndCheckRevoked(ctx, token)
+	document, error := database.Collection(cmd.FIRESTORE_USERS).Doc(token.UserID).Get(ctx)
 	if error != nil {
-		utility.GenerateError(w, error, http.StatusNotFound, "")
+		utility.GenerateError(w, error, http.StatusInternalServerError, "Firebase have error.")
+		return
+	}
+
+	var user cmd.Users
+
+	if err := document.DataTo(&user); err != nil {
+		utility.GenerateError(w, error, http.StatusNotFound, "User id not found for the database")
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(verifyToken)
+	json.NewEncoder(w).Encode(user)
+}
+
+// GetVideos take all videos list.
+func RefreshUserToken(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get(cmd.QUERY_USER_ID)
+	apiKey := r.Header.Get(cmd.QUERY_API_KEY)
+
+	if len(apiKey) == 0 {
+		error := errors.New("Api key required.")
+		utility.GenerateError(w, error, http.StatusNotAcceptable, "")
+		return
+	}
+
+	error := cmd.RefreshUserToken(userID)
+	if error != nil {
+		utility.GenerateError(w, error, http.StatusNotAcceptable, "User id not found for the database")
+		return
+	}
+
+	var success utility.BaseSuccess
+	success.CreatedDate = time.Now().String()
+	success.Success = true
+	success.Data = "User token refresh completed."
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(success)
 
 }
