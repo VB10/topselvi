@@ -21,3 +21,7 @@ const MODEL_INVALID = "Your request model body, doesn't validate."
 const QUERY_KEY = "key"
 const QUERY_API_KEY = "token"
 const QUERY_USER_ID = "userID"
+
+//firebase query param
+
+const FB_UID = "user_id"
