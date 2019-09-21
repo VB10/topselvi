@@ -16,20 +16,17 @@ type Users struct {
 	UserID       string `json:"userID"`
 }
 
-// VerifyUserToken method control userid in the firebase.
-func VerifyUserToken(userID string) error {
-
-	ctx := context.Background()
+// VerifyUserToken method control userToken in the firebase.
+func VerifyUserToken(userToken string) error {
 	app := FBInstance()
-	client, error := app.Auth(ctx)
-	if error != nil {
-		return error
+	client, err := app.Auth(context.Background())
+	if err != nil {
+		return err
 	}
-
-	verifyToken, error := client.VerifyIDToken(ctx, userID)
-	if error != nil {
+	verifyToken, err := client.VerifyIDToken(context.Background(), userToken)
+	if err != nil {
 		log.Print(verifyToken)
-		return error
+		return err
 	}
 	return nil
 }
@@ -37,37 +34,36 @@ func VerifyUserToken(userID string) error {
 //GetUserData function take UserInfo in the firebase db.
 func GetUserData(userID string) (*Users, error) {
 	if len(userID) == 0 {
-		var error = errors.New("User token must be required");
-		return nil, error;
+		var err = errors.New("User token must be required");
+		return nil, err
 	}
 
 	var ctx = context.Background()
 	app := FBInstance()
 
-	client, error := app.Auth(ctx)
-	if error != nil {
-		return nil, error
+	client, err := app.Auth(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	verifyToken, error := client.VerifyIDToken(ctx, userID)
-	if error != nil {
-		return nil, error
+	verifyToken, err := client.VerifyIDToken(ctx, userID)
+	if err != nil {
+		return nil, err
 	}
 
-	database, error := app.Firestore(ctx)
-	if error != nil {
-		return nil, error
+	database, err := app.Firestore(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	document, error := database.Collection(FIRESTORE_USERS).Doc(verifyToken.UID).Get(ctx)
-	if error != nil {
-		return nil, error
+	document, err := database.Collection(FirestoreUsers).Doc(verifyToken.UID).Get(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	var user Users
-
 	if err := document.DataTo(&user); err != nil {
-		return nil, error
+		return nil, err
 	}
 
 	user.UserID = verifyToken.UID
@@ -79,6 +75,7 @@ func RefreshUserToken(token string) error {
 	var ctx = context.Background()
 	app := FBInstance()
 
+
 	jwtParsed, error := JWTParser(token)
 
 	if len(jwtParsed) == 0 {
@@ -89,7 +86,15 @@ func RefreshUserToken(token string) error {
 	if error != nil {
 		return error
 	}
-	userID := fmt.Sprintf("%v", jwtParsed[FB_UID])
+	userID := fmt.Sprintf("%v", jwtParsed[FbUid])
+
+	 customToken, err := client.CustomToken(ctx, userID);
+	 if err != nil {
+		return err
+	}
+
+	print(customToken)
+
 
 	error = client.RevokeRefreshTokens(ctx, userID)
 	if error != nil {

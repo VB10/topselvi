@@ -19,18 +19,21 @@ func Middleware(h http.Handler, middleware ...func(http.Handler) http.Handler) h
 // by checking for a key in the url.
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestKey := r.Header.Get("token")
-		userID := r.Header.Get("userID")
+		apiKey := r.Header.Get(QueryApiKey)
+		userToken := r.Header.Get(QueryUserToken)
 
-		if error := VerifyUserToken(userID); error != nil {
-			utility.GenerateError(w, error, http.StatusUnauthorized, "token error")
+		if err := VerifyUserToken(userToken)
+		err != nil {
+			utility.GenerateError(w, err, http.StatusUnauthorized, "token error")
 			return
 		}
-		if len(requestKey) == 0 {
+
+		//TODO: FIX API KEY
+		if len(apiKey) == 0 {
 			// Report Unauthorized
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
-			io.WriteString(w, `{"error":"invalid_key"}`)
+			_, _ = io.WriteString(w, `{"error":"invalid_key"}`)
 			return
 		}
 		next.ServeHTTP(w, r)

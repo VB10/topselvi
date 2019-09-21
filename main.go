@@ -10,9 +10,10 @@ import (
 
 func main() {
 	router := mux.NewRouter()
-	godotenv.Load();
-	videos.VideosRouterInit(router);
-	users.UserRouterInit(router);
+	_ = godotenv.Load()
 
-	http.ListenAndServe(":8000", router)
+	videos.VideoRouterInit(router)
+	users.UserRouterInit(router)
+
+	_ = http.ListenAndServe(":8000", router)
 }

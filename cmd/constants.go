@@ -7,21 +7,25 @@ const POST = "POST"
 
 //Youtube Watch Prefix
 
-const YOUTUBE_WATCH_PREFIX = "https://www.youtube.com/watch?v="
+const YoutubeWatchPrefix = "https://www.youtube.com/watch?v="
 
 
 //collections string
-const FIRESTORE_VIDEOS = "videos"
-const FIRESTORE_USERS = "users"
+const FirestoreVideos = "videos"
+
+
+const FirebaseAuthEndPoint = "https://securetoken.googleapis.com/v1/token?key="+FirebaseApiKey
+const FirestoreUsers = "users"
+const FirebaseApiKey = "AIzaSyCRyClXcn4igHaFNd9TmZuJL1DkHgAuV9Q"
 
 //custom error
-const MODEL_INVALID = "Your request model body, doesn't validate."
+const ModelInvalid = "Your request model body, doesn't validate."
 
-//query paramaters.
-const QUERY_KEY = "key"
-const QUERY_API_KEY = "token"
-const QUERY_USER_ID = "userID"
+const QueryApiKey = "token"
+const QueryUserId = "userID"
+const QueryUserToken = "userToken"
+const QueryKey = "key"
 
 //firebase query param
 
-const FB_UID = "user_id"
+const FbUid = "user_id"

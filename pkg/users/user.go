@@ -5,6 +5,7 @@ import (
 	"../../utility"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"
@@ -20,9 +21,9 @@ func UserRouterInit(router *mux.Router) {
 // GetVideos take all videos list.
 func GetUser(w http.ResponseWriter, r *http.Request) {
 
-	userID := r.Header.Get("userID")
+	userToken := r.Header.Get(cmd.QueryUserToken)
 
-	if len(userID) == 0 {
+	if len(userToken) == 0 {
 		utility.GenerateError(w, errors.New("User ID must be required"), http.StatusNotFound, "User ID Not found.")
 		return
 	}
@@ -30,48 +31,50 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var ctx = context.Background()
 	app := cmd.FBInstance()
 
-	database, error := app.Firestore(ctx)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusInternalServerError, "")
+	database, err := app.Firestore(ctx)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "")
 		return
 	}
 
-	token, error := cmd.GetUserData(userID)
-	if error != nil {
+	token, err := cmd.GetUserData(userToken)
+	if err != nil {
 		return
 	}
 
-	document, error := database.Collection(cmd.FIRESTORE_USERS).Doc(token.UserID).Get(ctx)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusInternalServerError, "Firebase have error.")
+	document, err := database.Collection(cmd.FirestoreUsers).Doc(token.UserID).Get(ctx)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase have error.")
 		return
 	}
 
 	var user cmd.Users
-
 	if err := document.DataTo(&user); err != nil {
-		utility.GenerateError(w, error, http.StatusNotFound, "User id not found for the database")
+		utility.GenerateError(w, err, http.StatusNotFound, "User id not found for the database")
 		return
 	}
+	claims, err := cmd.JWTParser(userToken)
+	userID := fmt.Sprintf("%v", claims[cmd.FbUid])
+	user.UserID = userID
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	_ = json.NewEncoder(w).Encode(user)
 }
 
 // GetVideos take all videos list.
 func RefreshUserToken(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get(cmd.QUERY_USER_ID)
-	apiKey := r.Header.Get(cmd.QUERY_API_KEY)
+	userToken := r.Header.Get(cmd.QueryUserToken)
+	apiKey := r.Header.Get(cmd.QueryApiKey)
 
 	if len(apiKey) == 0 {
-		error := errors.New("Api key required.")
-		utility.GenerateError(w, error, http.StatusNotAcceptable, "")
+		err := errors.New("Api key required.")
+		utility.GenerateError(w, err, http.StatusNotAcceptable, "")
 		return
 	}
 
-	error := cmd.RefreshUserToken(userID)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusNotAcceptable, "User id not found for the database")
+	err := cmd.RefreshUserToken(userToken)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusNotAcceptable, "User id not found for the database")
 		return
 	}
 
@@ -81,6 +84,6 @@ func RefreshUserToken(w http.ResponseWriter, r *http.Request) {
 	success.Data = "User token refresh completed."
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(success)
+	_ = json.NewEncoder(w).Encode(success)
 
 }

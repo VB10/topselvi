@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"gopkg.in/go-playground/validator.v9"
 	"log"
 	"net/http"
@@ -36,7 +37,7 @@ type VideoPost struct {
 	NumberOfMembers int    `json:"numberOfMembers" validate:"required,min=1"`
 }
 
-func VideosRouterInit(router *mux.Router) {
+func VideoRouterInit(router *mux.Router) {
 	router.Handle("/videos", cmd.Middleware(http.HandlerFunc(GetVideos), cmd.AuthMiddleware)).Methods(cmd.GET)
 	router.Handle("/videos", cmd.Middleware(http.HandlerFunc(PostVideo), cmd.AuthMiddleware)).Methods(cmd.POST)
 }
@@ -46,15 +47,15 @@ func GetVideos(w http.ResponseWriter, r *http.Request) {
 
 	var ctx = context.Background()
 	app := cmd.FBInstance()
-	db, error := app.Firestore(ctx)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusInternalServerError, "Firebase have error.")
+	db, err := app.Firestore(ctx)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase have error.")
 		return
 	}
 
-	documents, error := db.Collection("videos").Documents(ctx).GetAll()
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusInternalServerError, "Firebase have error.")
+	documents, err := db.Collection("videos").Documents(ctx).GetAll()
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase have error.")
 		return
 	}
 
@@ -66,7 +67,7 @@ func GetVideos(w http.ResponseWriter, r *http.Request) {
 		}
 		videos = append(videos, v)
 	}
-	json.NewEncoder(w).Encode(videos)
+	_ = json.NewEncoder(w).Encode(videos)
 }
 
 // Post Videos take all videos list.
@@ -74,22 +75,22 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 	var videoPost VideoPost
 
-	json.NewDecoder(r.Body).Decode(&videoPost)
-	error := v.Struct(videoPost)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusUnprocessableEntity, cmd.MODEL_INVALID)
+	_ = json.NewDecoder(r.Body).Decode(&videoPost)
+	err := v.Struct(videoPost)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusUnprocessableEntity, cmd.ModelInvalid)
 		return
 	}
 
-	youtubeVideo, error := YoutubeVideoDetail(videoPost.YoutubeID)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusNotFound, "")
+	youtubeVideo, err := YoutubeVideoDetail(videoPost.YoutubeID)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusNotFound, "")
 		return
 	}
 
-	youtubeUser, error := YoutubeUserDetail(videoPost.YoutubeID)
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusNotFound, "")
+	youtubeUser, err := YoutubeUserDetail(videoPost.YoutubeID)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusNotFound, "")
 		return
 	}
 
@@ -97,12 +98,12 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 	videos.VideoTitle = youtubeVideo.Snippet.Title
 	videos.NumberOfMembers = videoPost.NumberOfMembers
 	videos.Price = videoPost.Price
-	videos.VideoURL = cmd.YOUTUBE_WATCH_PREFIX + videoPost.YoutubeID
+	videos.VideoURL = cmd.YoutubeWatchPrefix + videoPost.YoutubeID
 	videos.User = *youtubeUser
-	firestoreRef, error := videos.writeFirebaseDatabase()
+	firestoreRef, err := videos.writeFirebaseDatabase(r.Header.Get(cmd.QueryUserId))
 
-	if error != nil {
-		utility.GenerateError(w, error, http.StatusInternalServerError, "Firebase server have problem.")
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase server have problem.")
 		return
 	}
 
@@ -111,25 +112,30 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 	success.Success = true
 	success.Data = firestoreRef.ID
 
-	users.GetUser(w,r);
-
+	users.GetUser(w, r)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(success)
+	_ = json.NewEncoder(w).Encode(success)
 
 }
 
-func (videos Videos) writeFirebaseDatabase() (*firestore.DocumentRef, error) {
+func (videos Videos) writeFirebaseDatabase(uid string) (*firestore.DocumentRef, error) {
 	var ctx = context.Background()
 	app := cmd.FBInstance()
-	firestore, error := app.Firestore(ctx)
-	if error != nil {
-		log.Fatalf("error getting Auth client: %v\n", error)
-		return nil, error
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatalf("error getting Auth client: %v\n", err)
+		return nil, err
 	}
 
-	response, _, error := firestore.Collection(cmd.FIRESTORE_VIDEOS).Add(ctx, videos)
-	if error != nil {
-		return nil, error
+	user, err := cmd.GetUserData(uid)
+	if user.Wallet < videos.Price*videos.NumberOfMembers {
+		//TODO: Multi Language
+		return nil, errors.New("You don't have enough money.")
+	}
+
+	response, _, err := client.Collection(cmd.FirestoreVideos).Add(ctx, videos)
+	if err != nil {
+		return nil, err
 	}
 	return response, nil
 }
