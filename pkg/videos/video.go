@@ -100,8 +100,10 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 	videos.Price = videoPost.Price
 	videos.VideoURL = cmd.YoutubeWatchPrefix + videoPost.YoutubeID
 	videos.User = *youtubeUser
-	firestoreRef, err := videos.writeFirebaseDatabase(r.Header.Get(cmd.QueryUserId))
 
+	jwtClaims, _ := cmd.JWTParser(r.Header.Get(cmd.QueryUserToken))
+	idToken := jwtClaims[cmd.FirebaseQueryUserID].(string)
+	firestoreRef, err := videos.writeFirebaseDatabase(idToken)
 	if err != nil {
 		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase server have problem.")
 		return
@@ -128,6 +130,10 @@ func (videos Videos) writeFirebaseDatabase(uid string) (*firestore.DocumentRef, 
 	}
 
 	user, err := cmd.GetUserData(uid)
+	if err != nil {
+		return nil, err
+	}
+
 	if user.Wallet < videos.Price*videos.NumberOfMembers {
 		//TODO: Multi Language
 		return nil, errors.New("You don't have enough money.")
@@ -137,5 +143,12 @@ func (videos Videos) writeFirebaseDatabase(uid string) (*firestore.DocumentRef, 
 	if err != nil {
 		return nil, err
 	}
+
+	user.Wallet -= videos.Price * videos.NumberOfMembers
+	err = cmd.UpdateUserData(*user)
+	if err != nil {
+		return nil, err
+	}
+
 	return response, nil
 }

@@ -4,10 +4,7 @@
     <list default="true" id="b4f86724-4cbe-48ab-98d6-fe5b308cafa6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/constants.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/constants.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/firebase_helper.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/firebase_helper.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/middleware.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/users/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/users/user.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/videos/video.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/videos/video.go" afterDir="false" />
     </list>
@@ -146,14 +143,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/pkg/users/user.go</url>
-          <line>77</line>
-          <option name="timeStamp" value="59" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/user.go</url>
-          <line>95</line>
-          <option name="timeStamp" value="60" />
+          <url>file://$PROJECT_DIR$/pkg/videos/video.go</url>
+          <line>149</line>
+          <option name="timeStamp" value="82" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

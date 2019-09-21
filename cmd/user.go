@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"log"
+	"net/http"
 )
 
 type Users struct {
@@ -14,6 +17,11 @@ type Users struct {
 	Username     string `json:"username"`
 	Wallet       int    `json:"wallet"`
 	UserID       string `json:"userID"`
+}
+
+type CustomToken struct {
+	Token             string `json:"token"`
+	ReturnSecureToken bool   `json:"returnSecureToken"`
 }
 
 // VerifyUserToken method control userToken in the firebase.
@@ -41,22 +49,12 @@ func GetUserData(userID string) (*Users, error) {
 	var ctx = context.Background()
 	app := FBInstance()
 
-	client, err := app.Auth(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	verifyToken, err := client.VerifyIDToken(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
 	database, err := app.Firestore(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	document, err := database.Collection(FirestoreUsers).Doc(verifyToken.UID).Get(ctx)
+	document, err := database.Collection(FirestoreUsers).Doc(userID).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,41 +64,66 @@ func GetUserData(userID string) (*Users, error) {
 		return nil, err
 	}
 
-	user.UserID = verifyToken.UID
+	user.UserID = userID
 	return &user, nil
 }
 
-//RefreshUserToken function take UserInfo in the firebase db.
-func RefreshUserToken(token string) error {
+//GetUserData function take UserInfo in the firebase db.
+func UpdateUserData(user Users) error {
+
 	var ctx = context.Background()
 	app := FBInstance()
 
-
-	jwtParsed, error := JWTParser(token)
-
-	if len(jwtParsed) == 0 {
-		return errors.New("error")
-	}
-
-	client, error := app.Auth(ctx)
-	if error != nil {
-		return error
-	}
-	userID := fmt.Sprintf("%v", jwtParsed[FbUid])
-
-	 customToken, err := client.CustomToken(ctx, userID);
-	 if err != nil {
+	database, err := app.Firestore(ctx)
+	if err != nil {
 		return err
 	}
 
-	print(customToken)
-
-
-	error = client.RevokeRefreshTokens(ctx, userID)
-	if error != nil {
-		return error
+	//document, err := database.Collection(FirestoreUsers) .Update(ctx, []firestore.Update{{Path: "wallet", Value: user.Wallet}} )
+	document, err := database.Collection(FirestoreUsers).Doc("u2wevTndeKRHGai0b9KeHXKDXU32").Set(ctx, user)
+	if err != nil {
+		return err
 	}
+	print(document)
 	return nil
+}
+
+//RefreshUserToken function take UserInfo in the firebase db.
+func RefreshUserToken(token string) (string, error) {
+	var ctx = context.Background()
+	app := FBInstance()
+
+	jwtParsed, err := JWTParser(token)
+	if len(jwtParsed) == 0 {
+		return "", errors.New("error")
+	}
+
+	client, err := app.Auth(ctx)
+	if err != nil {
+		return "", err
+	}
+	userID := fmt.Sprintf("%v", jwtParsed[FbUid])
+
+	customToken, err := client.CustomToken(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+
+	var customTokenModel CustomToken
+	customTokenModel.Token = customToken
+	customTokenModel.ReturnSecureToken = true
+
+	var x, _ = json.Marshal(customTokenModel)
+
+	resp, err := http.Post(FirebaseAuthSigninCustomToken, "application/json", bytes.NewBuffer(x))
+	if err != nil {
+		return "", nil
+	}
+	var result map[string]interface{}
+
+	_ = json.NewDecoder(resp.Body).Decode(&result)
+	idToken := result[QueryIDToken].(string)
+	return idToken, nil
 }
 
 func JWTParser(key string) (jwt.MapClaims, error) {

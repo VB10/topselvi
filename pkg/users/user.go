@@ -14,7 +14,6 @@ import (
 
 func UserRouterInit(router *mux.Router) {
 	router.Handle("/users", cmd.Middleware(http.HandlerFunc(GetUser), cmd.AuthMiddleware)).Methods(cmd.GET)
-	//refresh token doesnt have userid
 	router.HandleFunc("/users/refresh", RefreshUserToken).Methods(cmd.GET)
 }
 
@@ -72,7 +71,7 @@ func RefreshUserToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := cmd.RefreshUserToken(userToken)
+	newToken, err := cmd.RefreshUserToken(userToken)
 	if err != nil {
 		utility.GenerateError(w, err, http.StatusNotAcceptable, "User id not found for the database")
 		return
@@ -81,9 +80,8 @@ func RefreshUserToken(w http.ResponseWriter, r *http.Request) {
 	var success utility.BaseSuccess
 	success.CreatedDate = time.Now().String()
 	success.Success = true
-	success.Data = "User token refresh completed."
+	success.Data = newToken
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(success)
-
 }
