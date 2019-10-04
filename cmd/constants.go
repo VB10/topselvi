@@ -30,3 +30,4 @@ const QueryKey = "key"
 //firebase query param
 
 const FbUid = "user_id"
+const JWTFirebaseKeyError = "key is of invalid type"

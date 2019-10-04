@@ -40,12 +40,7 @@ func VerifyUserToken(userToken string) error {
 }
 
 //GetUserData function take UserInfo in the firebase db.
-func GetUserData(userID string) (*Users, error) {
-	if len(userID) == 0 {
-		var err = errors.New("User token must be required");
-		return nil, err
-	}
-
+func GetUserData(userToken string) (*Users, error) {
 	var ctx = context.Background()
 	app := FBInstance()
 
@@ -54,11 +49,15 @@ func GetUserData(userID string) (*Users, error) {
 		return nil, err
 	}
 
+	claims, err := JWTParser(userToken)
+	if err != nil {
+		return nil, err
+	}
+	userID := fmt.Sprintf("%v", claims[FbUid])
 	document, err := database.Collection(FirestoreUsers).Doc(userID).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	var user Users
 	if err := document.DataTo(&user); err != nil {
 		return nil, err
@@ -128,9 +127,17 @@ func RefreshUserToken(token string) (string, error) {
 
 func JWTParser(key string) (jwt.MapClaims, error) {
 
-	token, error := jwt.Parse(key, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(key, func(token *jwt.Token) (interface{}, error) {
 		return []byte(""), nil
-	});
+	})
+	if token == nil {
+		return nil, err
+	}
+
+	if err != nil && err.Error() != JWTFirebaseKeyError {
+		return nil, err
+	}
+
 	claims := token.Claims.(jwt.MapClaims)
-	return claims, error
+	return claims, nil
 }

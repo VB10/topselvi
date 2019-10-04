@@ -21,12 +21,10 @@ func UserRouterInit(router *mux.Router) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	userToken := r.Header.Get(cmd.QueryUserToken)
-
 	if len(userToken) == 0 {
 		utility.GenerateError(w, errors.New("User ID must be required"), http.StatusNotFound, "User ID Not found.")
 		return
 	}
-
 	var ctx = context.Background()
 	app := cmd.FBInstance()
 
@@ -38,6 +36,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := cmd.GetUserData(userToken)
 	if err != nil {
+		utility.GenerateError(w, err, http.StatusNotFound, "User Not found")
 		return
 	}
 

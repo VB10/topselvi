@@ -30,9 +30,9 @@ type User struct {
 	Username     string `json:"userName"`
 	ProfileImage string `json:"profileImage"`
 }
-
+//TODO: validate property
 type VideoPost struct {
-	YoutubeID       string `json:"youtubeID" validate:"required"`
+	YoutubeID       string `json:"youtubeID,omitempty" validate:"required"`
 	Price           int    `json:"price" validate:"required,min=1"`
 	NumberOfMembers int    `json:"numberOfMembers" validate:"required,min=1"`
 }
@@ -71,6 +71,7 @@ func GetVideos(w http.ResponseWriter, r *http.Request) {
 }
 
 // Post Videos take all videos list.
+//TODO: user dont post empty data.
 func PostVideo(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 	var videoPost VideoPost
@@ -80,6 +81,10 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utility.GenerateError(w, err, http.StatusUnprocessableEntity, cmd.ModelInvalid)
 		return
+	}
+	//empty check
+	if videoPost == (VideoPost{}) {
+
 	}
 
 	youtubeVideo, err := YoutubeVideoDetail(videoPost.YoutubeID)
