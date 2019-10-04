@@ -15,17 +15,20 @@ const youtubeEP = "YOUTUBE_ENDPOINT"
 func YoutubeVideoDetail(id string) (*youtube.Video, error) {
 	apiKey, _ := os.LookupEnv("YOUTUBE_API_KEY")
 	ctx := context.Background()
-	youtubeService, error := youtube.NewService(ctx, option.WithAPIKey(apiKey))
+	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
 
-	if error != nil {
-		return nil, error
+	if err != nil {
+		return nil, err
 	}
 
-	result, error := youtubeService.Videos.List("snippet,contentDetails,statistics").Id(id).Do()
+	result, err := youtubeService.Videos.List("snippet,contentDetails,statistics").Id(id).Do()
+	if err != nil {
+		return nil, err
+	}
+
 	if len(result.Items) <= 0 {
 		return nil, errors.New("Error.Channel id not found")
 	}
-
 	return result.Items[0], nil
 }
 

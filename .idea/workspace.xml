@@ -3,10 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b4f86724-4cbe-48ab-98d6-fe5b308cafa6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/constants.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/constants.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/users/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/users/user.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/videos/video.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/videos/video.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/videos/youtube_config.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/videos/youtube_config.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -137,11 +135,6 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/pkg/videos/video.go</url>
-          <line>154</line>
-          <option name="timeStamp" value="82" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/cmd/user.go</url>
           <line>105</line>
           <option name="timeStamp" value="91" />
@@ -150,6 +143,26 @@
           <url>file://$PROJECT_DIR$/pkg/users/user.go</url>
           <line>78</line>
           <option name="timeStamp" value="95" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/pkg/videos/video.go</url>
+          <line>78</line>
+          <option name="timeStamp" value="113" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/pkg/videos/video.go</url>
+          <line>139</line>
+          <option name="timeStamp" value="116" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/pkg/videos/video.go</url>
+          <line>143</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/pkg/videos/video.go</url>
+          <line>133</line>
+          <option name="timeStamp" value="118" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

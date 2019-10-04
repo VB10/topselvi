@@ -20,6 +20,7 @@ import (
 type Videos struct {
 	VideoURL        string `json:"videoUrl"`
 	VideoTitle      string `json:"videoTitle"`
+	VideoImage      string `json:"videoImage"`
 	User            User   `json:"user"`
 	Price           int    `json:"price"`
 	NumberOfMembers int    `json:"numberOfMembers"`
@@ -30,6 +31,7 @@ type User struct {
 	Username     string `json:"userName"`
 	ProfileImage string `json:"profileImage"`
 }
+
 //TODO: validate property
 type VideoPost struct {
 	YoutubeID       string `json:"youtubeID,omitempty" validate:"required"`
@@ -101,14 +103,14 @@ func PostVideo(w http.ResponseWriter, r *http.Request) {
 
 	var videos Videos
 	videos.VideoTitle = youtubeVideo.Snippet.Title
+	videos.VideoImage = youtubeVideo.Snippet.Thumbnails.Default.Url
 	videos.NumberOfMembers = videoPost.NumberOfMembers
 	videos.Price = videoPost.Price
-	videos.VideoURL = cmd.YoutubeWatchPrefix + videoPost.YoutubeID
+	videos.VideoURL = videoPost.YoutubeID
 	videos.User = *youtubeUser
 
-	jwtClaims, _ := cmd.JWTParser(r.Header.Get(cmd.QueryUserToken))
-	idToken := jwtClaims[cmd.FirebaseQueryUserID].(string)
-	firestoreRef, err := videos.writeFirebaseDatabase(idToken)
+	userToken := r.Header.Get(cmd.QueryUserToken)
+	firestoreRef, err := videos.writeFirebaseDatabase(userToken)
 	if err != nil {
 		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase server have problem.")
 		return
