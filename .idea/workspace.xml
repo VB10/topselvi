@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b4f86724-4cbe-48ab-98d6-fe5b308cafa6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/videos/video.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/videos/video.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/videos/youtube_config.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/videos/youtube_config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/firebase_helper.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/firebase_helper.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -69,10 +68,15 @@
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/configs" />
     <property name="nodejs.protractor.protractor_package" value="" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
