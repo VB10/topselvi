@@ -1,18 +1,19 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/VB10/topselvi/pkg/auth"
+	"github.com/VB10/topselvi/pkg/users"
+	"github.com/VB10/topselvi/pkg/videos"
 	"github.com/gorilla/mux"
-
-	"../topselvi/pkg/videos"
+	"github.com/joho/godotenv"
+	"net/http"
 )
 
 func main() {
 	router := mux.NewRouter()
+	_ = godotenv.Load()
 
-	router.Handle("/videos", auth.Middleware(http.HandlerFunc(videos.GetVideos), auth.AuthMiddleware)).Methods("GET")
+	videos.VideoRouterInit(router)
+	users.UserRouterInit(router)
 
-	http.ListenAndServe(":8000", router)
+	_ = http.ListenAndServe(":8000", router)
 }

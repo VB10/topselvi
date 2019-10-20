@@ -1,17 +1,46 @@
 package videos
 
 import (
+	"cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
+	"github.com/VB10/topselvi/cmd"
+	"github.com/VB10/topselvi/pkg/users"
+	"github.com/VB10/topselvi/utility"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
+	"gopkg.in/go-playground/validator.v9"
 	"log"
 	"net/http"
-
-	"../../cmd"
+	"time"
 )
 
 // Video model.
-type Video struct {
-	VideoURL string `firestore:"videoUrl"`
+type Videos struct {
+	VideoURL        string `json:"videoUrl"`
+	VideoTitle      string `json:"videoTitle"`
+	VideoImage      string `json:"videoImage"`
+	User            User   `json:"user"`
+	Price           int    `json:"price"`
+	NumberOfMembers int    `json:"numberOfMembers"`
+}
+
+// User model.
+type User struct {
+	Username     string `json:"userName"`
+	ProfileImage string `json:"profileImage"`
+}
+
+//TODO: validate property
+type VideoPost struct {
+	YoutubeID       string `json:"youtubeID,omitempty" validate:"required"`
+	Price           int    `json:"price" validate:"required,min=1"`
+	NumberOfMembers int    `json:"numberOfMembers" validate:"required,min=1"`
+}
+
+func VideoRouterInit(router *mux.Router) {
+	router.Handle("/videos", cmd.Middleware(http.HandlerFunc(GetVideos), cmd.AuthMiddleware)).Methods(cmd.GET)
+	router.Handle("/videos", cmd.Middleware(http.HandlerFunc(PostVideo), cmd.AuthMiddleware)).Methods(cmd.POST)
 }
 
 // GetVideos take all videos list.
@@ -21,46 +50,111 @@ func GetVideos(w http.ResponseWriter, r *http.Request) {
 	app := cmd.FBInstance()
 	db, err := app.Firestore(ctx)
 	if err != nil {
-		log.Fatalf("error getting Auth client: %v\n", err)
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase have error.")
 		return
 	}
 
-	docsnap, err := db.Collection("videos").Documents(ctx).Next()
+	documents, err := db.Collection("videos").Documents(ctx).GetAll()
 	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase have error.")
+		return
 	}
 
-	var v Video
-	if err := docsnap.DataTo(&v); err != nil {
-		println(err)
+	var videos []Videos
+	for _, doc := range documents {
+		var v Videos
+		if err := doc.DataTo(&v); err != nil {
+			println(err)
+		}
+		videos = append(videos, v)
+	}
+	_ = json.NewEncoder(w).Encode(videos)
+}
+
+// Post Videos take all videos list.
+//TODO: user dont post empty data.
+func PostVideo(w http.ResponseWriter, r *http.Request) {
+	v := validator.New()
+	var videoPost VideoPost
+
+	_ = json.NewDecoder(r.Body).Decode(&videoPost)
+	err := v.Struct(videoPost)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusUnprocessableEntity, cmd.ModelInvalid)
+		return
+	}
+	//empty check
+	if videoPost == (VideoPost{}) {
+
 	}
 
-	// fmt.Println(v)
+	youtubeVideo, err := YoutubeVideoDetail(videoPost.YoutubeID)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusNotFound, "")
+		return
+	}
 
-	json.NewEncoder(w).Encode(v)
+	youtubeUser, err := YoutubeUserDetail(videoPost.YoutubeID)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusNotFound, "")
+		return
+	}
 
-	// println(result.)
-	// db, err := app.Database(ctx)
-	// if err != nil {
-	// 	log.Fatalf("error getting Auth client: %v\n", err)
-	// 	return
-	// }
+	var videos Videos
+	videos.VideoTitle = youtubeVideo.Snippet.Title
+	videos.VideoImage = youtubeVideo.Snippet.Thumbnails.Default.Url
+	videos.NumberOfMembers = videoPost.NumberOfMembers
+	videos.Price = videoPost.Price
+	videos.VideoURL = videoPost.YoutubeID
+	videos.User = *youtubeUser
 
-	// ref := db.NewRef("test/testingo")
-	// results, err := ref.OrderByKey().GetOrdered(ctx)
+	userToken := r.Header.Get(cmd.QueryUserToken)
+	firestoreRef, err := videos.writeFirebaseDatabase(userToken)
+	if err != nil {
+		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase server have problem.")
+		return
+	}
 
-	// books := []Book{}
-	// if err != nil {
-	// 	log.Fatalln("Error querying database:", err)
-	// }
-	// for _, r := range results {
-	// 	// data := r.Unmarshal(Book)
-	// 	// books = append(books)
-	// 	var book Book
+	var success utility.BaseSuccess
+	success.CreatedDate = time.Now().String()
+	success.Success = true
+	success.Data = firestoreRef.ID
 
-	// 	if err := r.Unmarshal(&book); err != nil {
-	// 		print(err)
-	// 	}
-	// 	books = append(books, book)
+	users.GetUser(w, r)
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(success)
 
-	// }
+}
+
+func (videos Videos) writeFirebaseDatabase(uid string) (*firestore.DocumentRef, error) {
+	var ctx = context.Background()
+	app := cmd.FBInstance()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatalf("error getting Auth client: %v\n", err)
+		return nil, err
+	}
+
+	user, err := cmd.GetUserData(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Wallet < videos.Price*videos.NumberOfMembers {
+		//TODO: Multi Language
+		return nil, errors.New("You don't have enough money.")
+	}
+
+	response, _, err := client.Collection(cmd.FirestoreVideos).Add(ctx, videos)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Wallet -= videos.Price * videos.NumberOfMembers
+	err = cmd.UpdateUserData(*user)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
