@@ -4,16 +4,15 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
+	"github.com/VB10/topselvi/cmd"
+	"github.com/VB10/topselvi/pkg/users"
+	"github.com/VB10/topselvi/utility"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"gopkg.in/go-playground/validator.v9"
 	"log"
 	"net/http"
 	"time"
-
-	"../../cmd"
-	"../../utility"
-	"../users"
 )
 
 // Video model.

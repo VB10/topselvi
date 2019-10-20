@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./pkg/users"
-	"./pkg/videos"
+	"github.com/VB10/topselvi/pkg/users"
+	"github.com/VB10/topselvi/pkg/videos"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"net/http"

@@ -1,11 +1,11 @@
 package users
 
 import (
-	"../../cmd"
-	"../../utility"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/VB10/topselvi/cmd"
+	"github.com/VB10/topselvi/utility"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"

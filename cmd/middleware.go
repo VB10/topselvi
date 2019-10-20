@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"../utility"
+	"github.com/VB10/topselvi/utility"
 	"io"
 	"net/http"
 )
