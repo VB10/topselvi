@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="b4f86724-4cbe-48ab-98d6-fe5b308cafa6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/firebase_helper.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/firebase_helper.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/constants.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/constants.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/users/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/users/user.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -38,8 +40,8 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/pkg/videos/video.go" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/pkg/videos/youtube_config.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/pkg/videos/video.go" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/main.go" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectConfigurationFiles">
@@ -139,13 +141,8 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/user.go</url>
-          <line>105</line>
-          <option name="timeStamp" value="91" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/pkg/users/user.go</url>
-          <line>78</line>
+          <line>84</line>
           <option name="timeStamp" value="95" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">

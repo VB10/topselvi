@@ -21,12 +21,22 @@ func UserRouterInit(router *mux.Router) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	userToken := r.Header.Get(cmd.QueryUserToken)
-	if len(userToken) == 0 {
-		utility.GenerateError(w, errors.New("User ID must be required"), http.StatusNotFound, "User ID Not found.")
-		return
-	}
 	var ctx = context.Background()
 	app := cmd.FBInstance()
+
+	token, err := cmd.GetUserData(userToken)
+	if err != nil {
+		//new user created
+		newUser ,err := cmd.CreateDefaultUser(userToken)
+		if err != nil {
+			utility.GenerateError(w, err, http.StatusNotFound, "User Not found")
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(newUser)
+		return
+	}
 
 	database, err := app.Firestore(ctx)
 	if err != nil {
@@ -34,14 +44,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := cmd.GetUserData(userToken)
-	if err != nil {
-		utility.GenerateError(w, err, http.StatusNotFound, "User Not found")
-		return
-	}
-
 	document, err := database.Collection(cmd.FirestoreUsers).Doc(token.UserID).Get(ctx)
 	if err != nil {
+
 		utility.GenerateError(w, err, http.StatusInternalServerError, "Firebase have error.")
 		return
 	}
@@ -51,6 +56,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		utility.GenerateError(w, err, http.StatusNotFound, "User id not found for the database")
 		return
 	}
+
 	claims, err := cmd.JWTParser(userToken)
 	userID := fmt.Sprintf("%v", claims[cmd.FbUid])
 	user.UserID = userID

@@ -27,7 +27,12 @@ const QueryUserToken = "userToken"
 const QueryIDToken = "idToken"
 const QueryKey = "key"
 
+const NewUserWallet = 100
+
 //firebase query param
 
 const FbUid = "user_id"
+const FBName = "name"
+const FBEmail = "email"
+const FBPicture= "picture"
 const JWTFirebaseKeyError = "key is of invalid type"

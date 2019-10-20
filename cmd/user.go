@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
 )
@@ -17,6 +16,7 @@ type Users struct {
 	Username     string `json:"username"`
 	Wallet       int    `json:"wallet"`
 	UserID       string `json:"userID"`
+	Picture       string `json:"picture"`
 }
 
 type CustomToken struct {
@@ -125,19 +125,39 @@ func RefreshUserToken(token string) (string, error) {
 	return idToken, nil
 }
 
-func JWTParser(key string) (jwt.MapClaims, error) {
+// CreateDefaultUser create new user data
+func CreateDefaultUser(userToken string)  (*Users, error) {
+	var ctx = context.Background()
+	app := FBInstance()
 
-	token, err := jwt.Parse(key, func(token *jwt.Token) (interface{}, error) {
-		return []byte(""), nil
-	})
-	if token == nil {
+	database, err := app.Firestore(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	if err != nil && err.Error() != JWTFirebaseKeyError {
+	claims, err := JWTParser(userToken)
+	if err != nil {
 		return nil, err
 	}
+	userID := fmt.Sprintf("%v", claims[FbUid])
+	email := fmt.Sprintf("%v", claims[FBEmail])
+	name := fmt.Sprintf("%v", claims[FBName])
+	picture := fmt.Sprintf("%v", claims[FBPicture])
 
-	claims := token.Claims.(jwt.MapClaims)
-	return claims, nil
+
+	var newUser = Users{
+		IsFirstLogin: false,
+		Mail:         email,
+		Username:     name,
+		Wallet:       NewUserWallet,
+		UserID:       userID,
+		Picture:      picture,
+	}
+
+	_ , err = database.Collection(FirestoreUsers).Doc(userID).Set(ctx, newUser)
+	if err != nil {
+		return nil,err
+	}
+
+	return &newUser, nil
 }
