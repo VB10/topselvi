@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/VB10/topselvi/utility"
-	"io"
 	"net/http"
 )
 
@@ -22,20 +21,19 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		apiKey := r.Header.Get(QueryApiKey)
 		userToken := r.Header.Get(QueryUserToken)
 
+		//TODO: FIX API KEY
+		if len(apiKey) == 0 {
+			// Report Unauthorized
+			utility.GenerateError(w, nil, http.StatusNotFound, ApiKeyEmptyError)
+			return
+		}
+
 		if err := VerifyUserToken(userToken)
-		err != nil {
+			err != nil {
 			utility.GenerateError(w, err, http.StatusUnauthorized, "token error")
 			return
 		}
 
-		//TODO: FIX API KEY
-		if len(apiKey) == 0 {
-			// Report Unauthorized
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
-			_, _ = io.WriteString(w, `{"error":"invalid_key"}`)
-			return
-		}
 		next.ServeHTTP(w, r)
 	})
 }

@@ -4,6 +4,8 @@ go 1.12
 
 require (
 	cloud.google.com/go/firestore v1.0.0
+	firebase.google.com/go v3.9.0+incompatible
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/google/btree v1.0.0 // indirect

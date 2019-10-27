@@ -10,14 +10,16 @@ const YoutubeWatchPrefix = "https://www.youtube.com/watch?v="
 
 //collections string
 const FirestoreVideos = "videos"
+const FirebaseApiKey = "AIzaSyCRyClXcn4igHaFNd9TmZuJL1DkHgAuV9Q"
+const FirebaseApiKey_SUB4 = "AIzaSyCW9_qmsAM0Wm4KDJwI1zozyloDunF_CtY"
 
 const FirebaseAuthEndPoint = "https://securetoken.googleapis.com/v1/token?key=" + FirebaseApiKey
-const FirebaseAuthSigninCustomToken = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=" + FirebaseApiKey
+const FirebaseAuthSigninCustomToken = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=" + FirebaseApiKey_SUB4
 const FirestoreUsers = "users"
-const FirebaseApiKey = "AIzaSyCRyClXcn4igHaFNd9TmZuJL1DkHgAuV9Q"
 
 //custom error
 const ModelInvalid = "Your request model body, doesn't validate."
+const ApiKeyEmptyError = "We need api key in request header."
 
 const FirebaseQueryUserID = "user_id"
 
